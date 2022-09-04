@@ -148,16 +148,6 @@ This document is designed to set up a dev environment on a Windows system [Recom
 
 #### [helm](https://helm.sh/)
 
-- For existing htlm, upgrade it
-
-  ```powershell
-  #Execute on PowerShell in admin mode
-  choco upgrade Kubernetes-helm -y
-
-  #Verify installation
-   helm version
-  ```
-
 - For new installation.
 
   ```powershell
@@ -168,7 +158,17 @@ This document is designed to set up a dev environment on a Windows system [Recom
    helm version
   ```
 
+- For existing helm, upgrade it
+
+  ```powershell
+  #Execute on PowerShell in admin mode
+  choco upgrade Kubernetes-helm -y
+
+  #Verify installation
+   helm version
+  ```
 - [Reference](https://helm.sh/docs/intro/install/) document for installation.
+
 
 ### Install MsSqlServer
 
@@ -285,7 +285,7 @@ This document is designed to set up a dev environment on a Windows system [Recom
   #Verify installation (run this in new terminal)
    dapr
   ```
-- For existing htlm, upgrade it
+- For existing dapr, upgrade it
 
   ```powershell
   #Execute on PowerShell in admin mode
@@ -316,4 +316,85 @@ dapr status -k
  kubectl create ns vik
 ```
 
+## Add helm repos
+```powershell
+helm repo add bitnami https://charts.bitnami.com/bitnami 
+helm repo add jetstack https://charts.jetstack.io
+helm repo add kafka-ui https://provectus.github.io/kafka-ui
+helm repo update
+helm repo list
+```
 
+## Install Kafka 
+- Zookeeper
+
+  ```powershell
+
+  helm install zookeeper bitnami/zookeeper --set replicaCount=1 --set auth.enabled=false --set allowAnonymousLogin=true -n vik
+
+  #ZooKeeper can be accessed via port 2181 on the following DNS name from within your cluster:
+  # zookeeper.vik.svc.cluster.local
+
+  #To connect to your ZooKeeper server from outside the cluster execute the following commands:
+
+    kubectl port-forward --namespace vik svc/zookeeper 2181:2181 & zkCli.sh 127.0.0.1:2181
+
+  ```
+- Kafka
+
+  ```powershell
+  helm install kafka bitnami/kafka --set zookeeper.enabled=false --set replicaCount=1 --set externalZookeeper.servers=zookeeper.vik.svc.cluster.local --set externalAccess.enabled=true --set externalAccess.service.type=LoadBalancer --set externalAccess.autoDiscovery.enabled=true --set rbac.create=true --set autoCreateTopicsEnable=true --set deleteTopicEnable=true -n vik
+  #Kafka can be accessed by consumers via port 9092 on the following DNS name from within your cluster:
+
+   # kafka.vik.svc.cluster.local
+
+  #Each Kafka broker can be accessed by producers via port 9092 on the following DNS name(s) from within your cluster:
+
+   # kafka-0.kafka-headless.vik.svc.cluster.local:9092
+   #  Kafka Brokers port: 9094
+  ```
+- Create Kafka topic
+
+  ```powershell
+  kubectl --namespace vik exec -it kafka-0 -- kafka-topics.sh --create --topic mytopic --replication-factor 1 --partitions 1 --bootstrap-server kafka.vik.svc.cluster.local:9092
+  ```  
+
+## Install Redis
+
+```powershell
+helm install redis bitnami/redis --set auth.enabled=false -n vik
+# create load balancer
+kubectl expose service redis-master -n vik --port=6379 --target-port=6379 --name=redis-external --type=LoadBalancer
+
+```
+## Install Zipkin
+
+```powershell
+# Pull Zipkin image
+docker pull openzipkin/zipkin
+# Create Zipkin deployment in k8s
+kubectl create deployment zipkin --image openzipkin/zipkin -n vik
+# Create Zipkin service
+kubectl expose deployment zipkin --type ClusterIP --port 9411 -n vik
+# Create Zipkin load balancer
+kubectl expose service zipkin -n vik --port=9411 --target-port=9411 --name=zipkin-external --type=LoadBalancer
+# http://localhost:9411/zipkin/
+
+```
+## Install Kafka UI
+
+```powershell
+# Pull Kafka-UI image
+docker pull provectuslabs/kafka-ui
+# Create Kafka-UI deployment in k8s
+kubectl run kafka-ui --image provectuslabs/kafka-ui --env="KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-0.kafka-headless.vik.svc.cluster.local:9093" --port=8080 -n vik
+# Create Kafka-UI service
+kubectl expose pod kafka-ui --type ClusterIP --port 8080 -n vik
+# Create Kafka-UI load balancer
+kubectl expose service kafka-ui -n vik --port=8080 --target-port=8080 --name=kafka-ui-external --type=LoadBalancer
+# http://localhost:8080
+```
+
+## Troubleshooting
+
+  - Helm charts are not able to pull images due to low internet speed. In this case, pull images explicitly.
