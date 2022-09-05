@@ -395,6 +395,36 @@ kubectl expose service kafka-ui -n vik --port=8080 --target-port=8080 --name=kaf
 # http://localhost:8080
 ```
 
+## Run dapr sidecar in self-hosted mode
+
+```powershell
+dapr run --app-id="sample-api" --app-port=5000 --dapr-grpc-port=53000 --dapr-http-port=53001
+
+# Now, run SampleAPI project with following launch setting:
+"profiles": {
+    "SampleAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DAPR_GRPC_PORT": "53000",
+        "DAPR_HTTP_PORT": "53001"
+      },
+      "applicationUrl": "https://localhost:7117;http://localhost:5117",
+      "dotnetRunMessages": true
+    }
+# Now, call API with swagger endpoint
+```
+
+## Install Dapr Component in k8s
+
+```powershell
+# Navigate to **dapr-components** folder path in terminal. 
+kubectl apply -f ./kafka-pubsub.yaml -n vik
+kubectl apply -f ./state-redis.yaml -n vik
+```
+
 ## Troubleshooting
 
   - Helm charts are not able to pull images due to low internet speed. In this case, pull images explicitly.
