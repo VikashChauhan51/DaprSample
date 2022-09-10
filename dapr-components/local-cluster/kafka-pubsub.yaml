@@ -1,7 +1,8 @@
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:
-  name: kafka-pubsub-noauth
+  name: kafka-pubsub
+  namespace: vik
 spec:
   type: pubsub.kafka
   version: v1

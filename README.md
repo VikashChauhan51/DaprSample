@@ -239,6 +239,18 @@ This document is designed to set up a dev environment on a Windows system [Recom
   #Execute on PowerShell in admin mode
    choco install powershell-core -y
   ```
+#### Install OpenSsl
+
+##### [OpenSsl](https://www.openssl.org/)
+
+- For manual installation, [Download](https://www.openssl.org/source/) and install it.
+
+- With Chocolatey.
+
+  ```powershell
+  #Execute on PowerShell in admin mode
+   choco install openssl -y
+  ```  
 
 #### Install Github Desktop
 
@@ -398,6 +410,8 @@ kubectl expose service kafka-ui -n vik --port=8080 --target-port=8080 --name=kaf
 ## Run dapr sidecar in self-hosted mode
 
 ```powershell
+# Navigate to **src** folder path in terminal.
+
 dapr run --app-id="sample-api" --app-port=5000 --dapr-grpc-port=53000 --dapr-http-port=53001
 
 # Now, run SampleAPI project with following launch setting:
@@ -420,10 +434,19 @@ dapr run --app-id="sample-api" --app-port=5000 --dapr-grpc-port=53000 --dapr-htt
 ## Install Dapr Component in k8s
 
 ```powershell
-# Navigate to **dapr-components** folder path in terminal. 
+# Navigate to **local-cluster** folder path in terminal. 
+kubectl apply -f ./dapr-config.yaml -n vik
 kubectl apply -f ./kafka-pubsub.yaml -n vik
 kubectl apply -f ./state-redis.yaml -n vik
+kubectl apply -f ./dapr-secrets.yaml -n vik
 ```
+## Deploy SampleAPI in k8s
+- publish **SampleAPI** image in docker `sampleapi:latest` (**Right click on Dockerfile-> Build Docker Image**)
+
+  ```powershell
+   # Navigate to **local-cluster** folder path in terminal.
+   kubectl apply -f ./service-deployment.yaml -n vik
+  ```
 
 ## Troubleshooting
 
