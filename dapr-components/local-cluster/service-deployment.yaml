@@ -53,26 +53,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: sample-api-config
-          startupProbe:
-            httpGet:
-              path: /health/startup
-              port: 80
-            failureThreshold: 30
-            periodSeconds: 15              
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: 80
-            initialDelaySeconds: 50
-            periodSeconds: 50
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 80
-            initialDelaySeconds: 30
-            periodSeconds: 50
-            successThreshold: 3
 
 
 ---

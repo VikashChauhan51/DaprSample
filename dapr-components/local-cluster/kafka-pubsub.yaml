@@ -8,7 +8,7 @@ spec:
   version: v1
   metadata:
   - name: brokers # Required. Kafka broker connection setting
-    value: "kafka-0.kafka-headless.vik.svc.cluster.local:9093"
+    value: kafka-0.kafka-headless.vik.svc.cluster.local:9093
   - name: authType # Required.
     value: "none"
   - name: disableTls 

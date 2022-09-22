@@ -446,6 +446,8 @@ kubectl apply -f ./dapr-secrets.yaml -n vik
   ```powershell
    # Navigate to **local-cluster** folder path in terminal.
    kubectl apply -f ./service-deployment.yaml -n vik
+   kubectl port-forward --namespace vik svc/sample-api 51000:80
+   # http://localhost:51000/swagger/index.html
   ```
 
 ## Troubleshooting
